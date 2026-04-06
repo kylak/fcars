@@ -270,10 +270,12 @@ fn find_most_frequent_values(dataset: &NominalDataset, attr_name: &str) -> Vec<S
         .unwrap_or(0);
     
     // Return all values with maximum frequency
-    groups.into_iter()
+    let mut most_frequent_values: Vec<String> = groups.into_iter()
         .filter(|(_, indices)| indices.len() == max_freq)
         .map(|(value, _)| value)
-        .collect()
+        .collect();
+    most_frequent_values.sort();
+    most_frequent_values
 }
 
 /// Compute closure for nominal data (group objects by attribute value and find common attributes)
@@ -442,7 +444,7 @@ pub fn display_cnc_chosen_attribute(dataset : &NominalDataset, results : &CncRes
 
     for pertinent_attr in &results.pertinent_attrs {
 
-        let most_frequent_values = dataset.get_attribute_values(pertinent_attr);
+        let most_frequent_values = find_most_frequent_values(dataset, pertinent_attr);
         println!("  Most frequent value(s) for '{}': {:?}", 
             pertinent_attr, most_frequent_values);
     }
