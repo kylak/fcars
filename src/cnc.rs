@@ -228,6 +228,20 @@ fn information_gain(dataset: &NominalDataset, attr_name: &str) -> f64 {
     total_entropy - weighted_entropy
 }
 
+fn attribute_information_gains(dataset: &NominalDataset) -> Vec<(String, f64)> {
+    let mut attr_gains = Vec::new();
+
+    for attr_name in &dataset.attributes {
+        if attr_name == &dataset.class_attribute {
+            continue;
+        }
+
+        attr_gains.push((attr_name.clone(), information_gain(dataset, attr_name)));
+    }
+
+    attr_gains
+}
+
 /// Find the most pertinent attribute using information gain
 /// Returns all attributes with maximum gain (handles ties)
 fn find_most_pertinent_attributes(dataset: &NominalDataset) -> Vec<String> {
@@ -438,6 +452,10 @@ pub fn cnc_bp(dataset: &NominalDataset, n: usize) -> CncBpResult {
 }
 
 pub fn display_cnc_chosen_attribute(dataset : &NominalDataset, results : &CncResult) {
+    println!("Information gain by attribute:");
+    for (attribute, gain) in attribute_information_gains(dataset) {
+        println!("  '{}' -> {:.6}", attribute, gain);
+    }
 
     println!("Most pertinent attribute(s): {:?}", 
         results.pertinent_attrs);
