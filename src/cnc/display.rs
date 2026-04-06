@@ -1,5 +1,5 @@
 use super::dataset::NominalDataset;
-use super::metrics::attribute_information_gains;
+use super::metrics::{attribute_information_gains, find_most_frequent_values};
 use super::types::{CncConcept, CncResult};
 
 pub fn display_cnc_chosen_attribute(dataset: &NominalDataset, results: &CncResult) {
@@ -11,7 +11,7 @@ pub fn display_cnc_chosen_attribute(dataset: &NominalDataset, results: &CncResul
     println!("Most pertinent attribute(s): {:?}", results.pertinent_attrs);
 
     for pertinent_attr in &results.pertinent_attrs {
-        let most_frequent_values = dataset.get_attribute_values(pertinent_attr);
+        let most_frequent_values = find_most_frequent_values(dataset, pertinent_attr);
         println!(
             "  Most frequent value(s) for '{}': {:?}",
             pertinent_attr, most_frequent_values
