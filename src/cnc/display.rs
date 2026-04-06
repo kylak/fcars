@@ -1,7 +1,13 @@
 use super::dataset::NominalDataset;
+use super::metrics::attribute_information_gains;
 use super::types::{CncConcept, CncResult};
 
 pub fn display_cnc_chosen_attribute(dataset: &NominalDataset, results: &CncResult) {
+    println!("Information gain by attribute:");
+    for gain in attribute_information_gains(dataset) {
+        println!("  '{}' -> {:.6}", gain.attribute, gain.gain);
+    }
+
     println!("Most pertinent attribute(s): {:?}", results.pertinent_attrs);
 
     for pertinent_attr in &results.pertinent_attrs {

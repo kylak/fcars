@@ -2,6 +2,12 @@ use std::collections::HashMap;
 
 use super::dataset::NominalDataset;
 
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct AttributeInformationGain {
+    pub(crate) attribute: String,
+    pub(crate) gain: f64,
+}
+
 /// Calculate entropy for nominal values
 fn calculate_entropy(values: &[String]) -> f64 {
     if values.is_empty() {
@@ -54,31 +60,48 @@ fn information_gain(dataset: &NominalDataset, attr_name: &str) -> f64 {
     total_entropy - weighted_entropy
 }
 
-/// Find the most pertinent attribute using information gain
-/// Returns all attributes with maximum gain (handles ties)
-pub(crate) fn find_most_pertinent_attributes(dataset: &NominalDataset) -> Vec<String> {
-    let mut attr_gains = Vec::new();
+pub(crate) fn attribute_information_gains(
+    dataset: &NominalDataset,
+) -> Vec<AttributeInformationGain> {
+    let mut gains = Vec::new();
 
     for attr_name in &dataset.attributes {
         if attr_name == &dataset.class_attribute {
-            continue; // Skip class attribute
+            continue;
         }
 
-        let gain = information_gain(dataset, attr_name);
-        attr_gains.push((attr_name.clone(), gain));
+        gains.push(AttributeInformationGain {
+            attribute: attr_name.clone(),
+            gain: information_gain(dataset, attr_name),
+        });
     }
+
+    gains.sort_by(|left, right| {
+        right
+            .gain
+            .total_cmp(&left.gain)
+            .then_with(|| left.attribute.cmp(&right.attribute))
+    });
+
+    gains
+}
+
+/// Find the most pertinent attribute using information gain
+/// Returns all attributes with maximum gain (handles ties)
+pub(crate) fn find_most_pertinent_attributes(dataset: &NominalDataset) -> Vec<String> {
+    let attr_gains = attribute_information_gains(dataset);
 
     // Find maximum gain
     let max_gain = attr_gains
         .iter()
-        .map(|(_, gain)| *gain)
+        .map(|gain| gain.gain)
         .fold(f64::MIN, f64::max);
 
     // Return all attributes with maximum gain
     attr_gains
         .into_iter()
-        .filter(|(_, gain)| *gain == max_gain)
-        .map(|(attr, _)| attr)
+        .filter(|gain| gain.gain == max_gain)
+        .map(|gain| gain.attribute)
         .collect()
 }
 
